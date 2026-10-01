@@ -49,6 +49,25 @@ dotnet build src/Vortex.App -f net10.0-android -t:Run
 dotnet test tests/Vortex.Shared.Tests
 ```
 
+## Publicar en Microsoft Store
+
+La app de escritorio se distribuye como **MSIX** a través de Microsoft Store. Los paquetes se suben **sin firmar**: la Store los firma con su propio certificado al publicarlos, así que no hace falta comprar un certificado de firma de código.
+
+1. En [Partner Center](https://partner.microsoft.com/dashboard) reserva el nombre de la app y abre *Gestión de productos → Identidad del producto*.
+2. En GitHub, en *Settings → Secrets and variables → Actions → Variables*, crea estas variables:
+   - `STORE_IDENTITY_NAME`: el valor de `Package/Identity/Name`
+   - `STORE_PUBLISHER`: el valor de `Package/Identity/Publisher` (`CN=...`)
+   - `STORE_PUBLISHER_DISPLAY_NAME`: el valor de `Package/Properties/PublisherDisplayName`
+3. Publica un tag de versión:
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+   El workflow **Release Windows** genera los paquetes `x64` y `arm64`. También se puede lanzar a mano desde la pestaña *Actions*.
+4. Descarga los `.msix` de los artefactos del workflow y súbelos en un envío nuevo en Partner Center.
+
+Cada envío a la Store necesita una versión mayor que la anterior. La versión del MSIX es `major.minor.build.0`, porque la Store exige que el último número sea 0.
+
 ## Hoja de ruta
 
 | Fase | Contenido | Estado |

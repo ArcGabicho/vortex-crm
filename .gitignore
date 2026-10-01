@@ -20,3 +20,5 @@ Thumbs.db
 # Carpetas de publicación
 Publish/
 published/
+# Paquetes generados (MSIX, etc.)
+artifacts/
