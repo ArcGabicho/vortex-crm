@@ -18,6 +18,9 @@ public static class EstadosCotizacion
 /// <summary>Una línea de la cotización: producto o servicio, cantidad y precio.</summary>
 public sealed class LineaCotizacion
 {
+    /// <summary>Producto del catálogo del que salió la línea, si salió de ahí (para reportes).</summary>
+    public Guid? ProductoId { get; set; }
+
     public string Descripcion { get; set; } = "";
 
     /// <summary>Unidad de medida: UND, KG, M, SERVICIO, etc.</summary>
@@ -29,6 +32,9 @@ public sealed class LineaCotizacion
     public decimal PrecioUnitario { get; set; }
 
     public decimal Importe => Math.Round(Cantidad * PrecioUnitario, 2, MidpointRounding.AwayFromZero);
+
+    /// <summary>Una línea recién agregada que todavía no tiene nada escrito.</summary>
+    public bool EstaVacia => string.IsNullOrWhiteSpace(Descripcion) && PrecioUnitario == 0 && ProductoId is null;
 
     public LineaCotizacion Clonar() => (LineaCotizacion)MemberwiseClone();
 }
@@ -92,6 +98,20 @@ public sealed class Cotizacion
     public DateTimeOffset CreadoEn { get; init; } = DateTimeOffset.UtcNow;
 
     public TotalesCotizacion Totales => TotalesCotizacion.Calcular(Lineas, ModoIgv);
+
+    /// <summary>Agrega la línea; si hay una línea vacía (como la que trae una cotización nueva), la reemplaza.</summary>
+    public void AgregarLinea(LineaCotizacion linea)
+    {
+        var vacia = Lineas.FindIndex(l => l.EstaVacia);
+        if (vacia >= 0)
+        {
+            Lineas[vacia] = linea;
+        }
+        else
+        {
+            Lineas.Add(linea);
+        }
+    }
 
     /// <summary>
     /// Cambia el estado y avanza la oportunidad vinculada: al enviarse pasa de Prospecto a

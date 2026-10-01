@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Vortex.Domain.Catalogo;
 using Vortex.Domain.Configuracion;
 using Vortex.Domain.Contactos;
 using Vortex.Domain.Ventas;
+using Vortex.Infrastructure.Catalogo;
 using Vortex.Infrastructure.Configuracion;
 using Vortex.Infrastructure.Contactos;
 using Vortex.Infrastructure.Ventas;
@@ -19,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRepositorioContactos, RepositorioContactosEnMemoria>();
         services.AddSingleton<IRepositorioOportunidades, RepositorioOportunidadesEnMemoria>();
         services.AddSingleton<IRepositorioCotizaciones, RepositorioCotizacionesEnMemoria>();
+        services.AddSingleton<IRepositorioProductos, RepositorioProductosEnMemoria>();
 
         services.AddSingleton<IGeneradorPdfCotizaciones, GeneradorPdfCotizaciones>();
 

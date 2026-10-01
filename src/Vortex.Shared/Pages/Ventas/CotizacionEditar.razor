@@ -1,5 +1,6 @@
 @page "/cotizaciones/nueva"
 @page "/cotizaciones/{Id:guid}"
+@using Vortex.Domain.Catalogo
 @using Vortex.Domain.Configuracion
 @using Vortex.Shared.Servicios
 @inject IRepositorioCotizaciones Cotizaciones
@@ -126,8 +127,12 @@ else
             </MudPaper>
         }
 
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@(() => cotizacion.Lineas.Add(new LineaCotizacion()))">Agregar producto o servicio</MudButton>
+        <MudStack Row Wrap="Wrap.Wrap">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Inventory2"
+                       OnClick="AgregarDelCatalogoAsync">Agregar del catálogo</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => cotizacion.Lineas.Add(new LineaCotizacion()))">Agregar producto o servicio</MudButton>
+        </MudStack>
 
         <div class="d-flex justify-end mt-4">
             <MudSimpleTable Dense Elevation="0" Style="min-width: 260px">
@@ -389,6 +394,18 @@ else
     }
 
     /// <summary>El enlace abre WhatsApp; además se guarda la cotización y se marca como enviada.</summary>
+    private async Task AgregarDelCatalogoAsync()
+    {
+        var parametros = new DialogParameters<SelectorProductoDialog> { { d => d.ModoIgv, cotizacion!.ModoIgv } };
+        var opciones = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small, CloseButton = true };
+
+        var dialogo = await Dialogos.ShowAsync<SelectorProductoDialog>("Agregar del catálogo", parametros, opciones);
+        if (await dialogo.Result is { Canceled: false, Data: Producto producto })
+        {
+            cotizacion.AgregarLinea(producto.CrearLinea(cotizacion.ModoIgv));
+        }
+    }
+
     private async Task EnviarPorWhatsAppAsync()
     {
         if (cotizacion!.Estado == EstadoCotizacion.Borrador)

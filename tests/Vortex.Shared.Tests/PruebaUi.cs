@@ -23,12 +23,16 @@ public abstract class PruebaUi : BunitContext
         Services.AddSingleton<IServicioArchivos>(Archivos);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Popovers = Render<MudPopoverProvider>();
+        Dialogos = Render<MudDialogProvider>();
     }
 
     protected CancellationToken Ct { get; } = Xunit.TestContext.Current.CancellationToken;
 
     /// <summary>Donde se renderizan los menús y las listas desplegables de MudBlazor.</summary>
     protected IRenderedComponent<MudPopoverProvider> Popovers { get; }
+
+    /// <summary>Donde se renderizan los diálogos.</summary>
+    protected IRenderedComponent<MudDialogProvider> Dialogos { get; }
 
     protected ArchivosEntregados Archivos { get; } = new();
 
