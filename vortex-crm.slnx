@@ -1,3 +1,10 @@
 <Solution>
-  <Project Path="vortex-crm.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/Vortex.App/Vortex.App.csproj" />
+    <Project Path="src/Vortex.Shared/Vortex.Shared.csproj" />
+    <Project Path="src/Vortex.Web/Vortex.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vortex.Shared.Tests/Vortex.Shared.Tests.csproj" />
+  </Folder>
 </Solution>
