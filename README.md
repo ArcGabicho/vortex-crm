@@ -19,14 +19,19 @@ El CRM para emprendedores peruanos: clientes, ventas, cotizaciones y seguimiento
 
 ```
 src/
-├── Vortex.App/      App MAUI Blazor Hybrid (host nativo, plataformas)
-├── Vortex.Shared/   Toda la UI: páginas, layout y componentes Razor
-└── Vortex.Web/      Host web de la misma UI
+├── Vortex.App/             App MAUI Blazor Hybrid (host nativo, plataformas)
+├── Vortex.Shared/          Toda la UI: páginas, layout y componentes Razor
+├── Vortex.Web/             Host web de la misma UI
+├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos)
+└── Vortex.Infrastructure/  Datos e integraciones externas
 tests/
-└── Vortex.Shared.Tests/   Tests de componentes con bUnit
+├── Vortex.Domain.Tests/    Tests de dominio e infraestructura
+└── Vortex.Shared.Tests/    Tests de componentes con bUnit
 ```
 
 La UI se escribe **una sola vez** en `Vortex.Shared` y la usan tanto la app como la web.
+
+> **Estado temporal:** los datos se guardan en memoria y se pierden al cerrar la app. Hasta la Fase 2 la versión web los comparte entre todos los visitantes. La consulta de RUC/DNI usa un proveedor de prueba que inventa los datos (`ConsultaDocumentosFalsa`). Para simular "no encontrado", usa un DNI que termine en `0000` o un RUC cuyos dígitos 7 a 10 sean `0000` (por ejemplo `20600000005`).
 
 ## Requisitos
 
@@ -46,6 +51,7 @@ dotnet build src/Vortex.App -f net10.0-windows10.0.19041.0 -t:Run
 dotnet build src/Vortex.App -f net10.0-android -t:Run
 
 # Tests
+dotnet test tests/Vortex.Domain.Tests
 dotnet test tests/Vortex.Shared.Tests
 ```
 
@@ -72,8 +78,8 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia | ✅ |
-| 1 | MVP: contactos (RUC/DNI), pipeline, cotizaciones en PEN con IGV, tareas | ⏳ |
+| 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia, ícono | ✅ |
+| 1 | MVP: contactos (RUC/DNI) ✅, pipeline, cotizaciones en PEN con IGV, tareas, catálogo, ubigeo | 🚧 |
 | 2 | API, SQL Server, multiempresa, autenticación, sincronización offline | ⏳ |
 | 3 | Facturación electrónica SUNAT (vía PSE/OSE), WhatsApp Business, cobros | ⏳ |
 | 4 | IA: resúmenes de conversaciones, lead scoring, redacción de mensajes | ⏳ |

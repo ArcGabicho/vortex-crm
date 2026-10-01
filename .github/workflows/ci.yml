@@ -16,7 +16,9 @@ jobs:
           dotnet-version: 10.0.x
       - name: Compilar web
         run: dotnet build src/Vortex.Web/Vortex.Web.csproj -c Release
-      - name: Tests
+      - name: Tests de dominio
+        run: dotnet test tests/Vortex.Domain.Tests/Vortex.Domain.Tests.csproj -c Release
+      - name: Tests de componentes
         run: dotnet test tests/Vortex.Shared.Tests/Vortex.Shared.Tests.csproj -c Release
 
   android:

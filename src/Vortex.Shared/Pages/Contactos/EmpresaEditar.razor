@@ -1,0 +1,197 @@
+@page "/empresas/nueva"
+@page "/empresas/{Id:guid}"
+@inject IRepositorioContactos Repositorio
+@inject IConsultaDocumentos ConsultaDocumentos
+@inject NavigationManager Navegacion
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogos
+
+<PageTitle>@Titulo · Vortex CRM</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">@Titulo</MudText>
+
+@if (noEncontrada)
+{
+    <MudAlert Severity="Severity.Warning">La empresa no existe o fue eliminada.</MudAlert>
+}
+else if (empresa is null)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else
+{
+    @if (ConsultaDocumentos.EsDePrueba)
+    {
+        <MudAlert Severity="Severity.Info" Dense Class="mb-4">
+            La consulta de RUC está en modo de prueba: los datos que se completan son inventados.
+        </MudAlert>
+    }
+
+    <MudPaper Class="pa-4" Elevation="1">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="RUC" Value="empresa.Ruc" ValueChanged="CambiarRucAsync" Immediate
+                              MaxLength="11" InputMode="InputMode.numeric" Required
+                              Error="@(errorRuc is not null)" ErrorText="@errorRuc"
+                              HelperText="Al ingresar los 11 dígitos se completan los datos de SUNAT"
+                              Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnAdornmentClick="BuscarRucAsync" AdornmentAriaLabel="Buscar RUC" />
+                @if (buscando)
+                {
+                    <MudProgressLinear Indeterminate Color="Color.Primary" Class="mt-1" />
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="empresa.RazonSocial" Label="Razón social" Required />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="empresa.NombreComercial" Label="Nombre comercial" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="empresa.Direccion" Label="Dirección fiscal" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="empresa.Telefono" Label="Teléfono" InputType="InputType.Telephone" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="empresa.Email" Label="Correo" InputType="InputType.Email" />
+            </MudItem>
+            @if (empresa.EstadoSunat is not null)
+            {
+                <MudItem xs="12">
+                    <MudChip T="string" Color="@(empresa.EstadoSunat == "ACTIVO" ? Color.Success : Color.Error)" Class="ml-0">
+                        @empresa.EstadoSunat
+                    </MudChip>
+                    <MudChip T="string" Color="@(empresa.CondicionSunat == "HABIDO" ? Color.Success : Color.Error)">
+                        @empresa.CondicionSunat
+                    </MudChip>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (errores.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">
+                @foreach (var error in errores)
+                {
+                    <div>@error</div>
+                }
+            </MudAlert>
+        }
+
+        <MudStack Row Wrap="Wrap.Wrap" Justify="Justify.FlexEnd" Class="mt-4">
+            @if (Id is not null)
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="EliminarAsync">Eliminar</MudButton>
+            }
+            <MudButton Variant="Variant.Text" Href="contactos">Cancelar</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarAsync" Disabled="buscando">Guardar</MudButton>
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private Empresa? empresa;
+    private bool noEncontrada;
+    private bool buscando;
+    private string? errorRuc;
+    private string? ultimoRucConsultado;
+    private List<string> errores = [];
+
+    private string Titulo => Id is null ? "Nueva empresa" : "Editar empresa";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is null)
+        {
+            empresa = new Empresa();
+            return;
+        }
+
+        empresa = await Repositorio.ObtenerEmpresaAsync(Id.Value);
+        noEncontrada = empresa is null;
+        ultimoRucConsultado = empresa?.Ruc;
+    }
+
+    private async Task CambiarRucAsync(string? valor)
+    {
+        empresa!.Ruc = new string((valor ?? "").Where(char.IsAsciiDigit).ToArray());
+        errorRuc = null;
+
+        if (empresa.Ruc.Length == 11 && empresa.Ruc != ultimoRucConsultado)
+        {
+            await BuscarRucAsync();
+        }
+    }
+
+    private async Task BuscarRucAsync()
+    {
+        if (!DocumentoIdentidad.EsRucValido(empresa!.Ruc))
+        {
+            errorRuc = "El RUC no es válido: revisa que tenga 11 dígitos y el dígito verificador.";
+            return;
+        }
+
+        buscando = true;
+        ultimoRucConsultado = empresa.Ruc;
+        try
+        {
+            var datos = await ConsultaDocumentos.ConsultarRucAsync(empresa.Ruc);
+            if (datos is null)
+            {
+                Snackbar.Add("No se encontró el RUC. Completa los datos a mano.", Severity.Warning);
+                return;
+            }
+
+            empresa.RazonSocial = datos.RazonSocial;
+            empresa.NombreComercial = datos.NombreComercial;
+            empresa.Direccion = datos.Direccion;
+            empresa.EstadoSunat = datos.Estado;
+            empresa.CondicionSunat = datos.Condicion;
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("No se pudo consultar el RUC. Revisa tu conexión o completa los datos a mano.", Severity.Error);
+        }
+        finally
+        {
+            buscando = false;
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        errores = empresa!.Validar().ToList();
+        if (errores.Count == 0 && await Repositorio.ExisteRucAsync(empresa.Ruc, empresa.Id))
+        {
+            errores.Add("Ya tienes registrada una empresa con este RUC.");
+        }
+
+        if (errores.Count > 0)
+        {
+            return;
+        }
+
+        await Repositorio.GuardarEmpresaAsync(empresa);
+        Snackbar.Add("Empresa guardada.", Severity.Success);
+        Navegacion.NavigateTo("contactos");
+    }
+
+    private async Task EliminarAsync()
+    {
+        var confirmado = await Dialogos.ShowMessageBoxAsync(
+            "Eliminar empresa",
+            $"¿Eliminar {empresa!.NombreVisible}? Sus contactos se conservan, pero quedan sin empresa.",
+            yesText: "Eliminar",
+            cancelText: "Cancelar");
+
+        if (confirmado == true)
+        {
+            await Repositorio.EliminarEmpresaAsync(empresa.Id);
+            Snackbar.Add("Empresa eliminada.", Severity.Success);
+            Navegacion.NavigateTo("contactos");
+        }
+    }
+}

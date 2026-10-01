@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Shared\Vortex.Shared.csproj" />
+    <ProjectReference Include="..\Vortex.Infrastructure\Vortex.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
