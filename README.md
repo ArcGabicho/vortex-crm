@@ -22,7 +22,7 @@ src/
 ├── Vortex.App/             App MAUI Blazor Hybrid (host nativo, plataformas)
 ├── Vortex.Shared/          Toda la UI: páginas, layout y componentes Razor
 ├── Vortex.Web/             Host web de la misma UI
-├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos)
+├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline)
 └── Vortex.Infrastructure/  Datos e integraciones externas
 tests/
 ├── Vortex.Domain.Tests/    Tests de dominio e infraestructura
@@ -79,7 +79,7 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia, ícono | ✅ |
-| 1 | MVP: contactos (RUC/DNI) ✅, pipeline, cotizaciones en PEN con IGV, tareas, catálogo, ubigeo | 🚧 |
+| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones en PEN con IGV, tareas, catálogo, ubigeo | 🚧 |
 | 2 | API, SQL Server, multiempresa, autenticación, sincronización offline | ⏳ |
 | 3 | Facturación electrónica SUNAT (vía PSE/OSE), WhatsApp Business, cobros | ⏳ |
 | 4 | IA: resúmenes de conversaciones, lead scoring, redacción de mensajes | ⏳ |

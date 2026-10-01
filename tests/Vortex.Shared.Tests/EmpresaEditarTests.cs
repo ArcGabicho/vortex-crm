@@ -3,7 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
 using Vortex.Domain.Contactos;
+using Vortex.Domain.Ventas;
 using Vortex.Infrastructure.Contactos;
+using Vortex.Infrastructure.Ventas;
 using Vortex.Shared.Pages.Contactos;
 using Xunit;
 
@@ -21,6 +23,7 @@ public class EmpresaEditarTests : BunitContext
         Services.AddMudServices();
         Services.AddSingleton<IRepositorioContactos>(repositorio);
         Services.AddSingleton<IConsultaDocumentos>(consulta);
+        Services.AddSingleton<IRepositorioOportunidades>(new RepositorioOportunidadesEnMemoria());
         JSInterop.Mode = JSRuntimeMode.Loose;
         Render<MudPopoverProvider>();
     }

@@ -5,6 +5,7 @@
 @inject NavigationManager Navegacion
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogos
+@inject IRepositorioOportunidades Oportunidades
 
 <PageTitle>@Titulo · Vortex CRM</PageTitle>
 
@@ -181,6 +182,15 @@ else
 
     private async Task EliminarAsync()
     {
+        var cantidad = await Oportunidades.ContarDeClienteAsync(empresa!.Id);
+        if (cantidad > 0)
+        {
+            Snackbar.Add(
+                $"No se puede eliminar: tiene {cantidad} oportunidad(es) en el pipeline. Elimínalas o cámbialas de cliente primero.",
+                Severity.Warning);
+            return;
+        }
+
         var confirmado = await Dialogos.ShowMessageBoxAsync(
             "Eliminar empresa",
             $"¿Eliminar {empresa!.NombreVisible}? Sus contactos se conservan, pero quedan sin empresa.",

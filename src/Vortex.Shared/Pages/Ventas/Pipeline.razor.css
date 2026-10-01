@@ -1,0 +1,39 @@
+/* En pantallas anchas las cinco columnas caben sin desplazamiento */
+.tablero ::deep .columnas {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.tablero ::deep .columna {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 0 200px;
+    min-height: 160px;
+    padding: 8px;
+    border-radius: 8px;
+    background: var(--mud-palette-background-gray);
+}
+
+/* En el celular: una columna a la vez, deslizando, con la siguiente asomándose */
+@media (max-width: 600px) {
+    .tablero ::deep .columnas {
+        scroll-snap-type: x mandatory;
+    }
+
+    .tablero ::deep .columna {
+        flex: 0 0 85%;
+        scroll-snap-align: start;
+    }
+}
+
+.tablero ::deep .cabecera {
+    padding: 4px 4px 0;
+}
+
+.tablero ::deep .tarjeta {
+    cursor: grab;
+}
