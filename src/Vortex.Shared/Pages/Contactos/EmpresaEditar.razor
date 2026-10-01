@@ -6,6 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogos
 @inject IRepositorioOportunidades Oportunidades
+@inject IRepositorioCotizaciones Cotizaciones
 
 <PageTitle>@Titulo · Vortex CRM</PageTitle>
 
@@ -31,16 +32,8 @@ else
     <MudPaper Class="pa-4" Elevation="1">
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="RUC" Value="empresa.Ruc" ValueChanged="CambiarRucAsync" Immediate
-                              MaxLength="11" InputMode="InputMode.numeric" Required
-                              Error="@(errorRuc is not null)" ErrorText="@errorRuc"
-                              HelperText="Al ingresar los 11 dígitos se completan los datos de SUNAT"
-                              Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
-                              OnAdornmentClick="BuscarRucAsync" AdornmentAriaLabel="Buscar RUC" />
-                @if (buscando)
-                {
-                    <MudProgressLinear Indeterminate Color="Color.Primary" Class="mt-1" />
-                }
+                <CampoRuc Ruc="@empresa.Ruc" RucChanged="@(ruc => empresa.Ruc = ruc ?? "")" Encontrado="AplicarDatosSunat"
+                          @bind-Buscando="buscando" Requerido />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="empresa.RazonSocial" Label="Razón social" Required />
@@ -97,8 +90,6 @@ else
     private Empresa? empresa;
     private bool noEncontrada;
     private bool buscando;
-    private string? errorRuc;
-    private string? ultimoRucConsultado;
     private List<string> errores = [];
 
     private string Titulo => Id is null ? "Nueva empresa" : "Editar empresa";
@@ -113,53 +104,15 @@ else
 
         empresa = await Repositorio.ObtenerEmpresaAsync(Id.Value);
         noEncontrada = empresa is null;
-        ultimoRucConsultado = empresa?.Ruc;
     }
 
-    private async Task CambiarRucAsync(string? valor)
+    private void AplicarDatosSunat(DatosRuc datos)
     {
-        empresa!.Ruc = new string((valor ?? "").Where(char.IsAsciiDigit).ToArray());
-        errorRuc = null;
-
-        if (empresa.Ruc.Length == 11 && empresa.Ruc != ultimoRucConsultado)
-        {
-            await BuscarRucAsync();
-        }
-    }
-
-    private async Task BuscarRucAsync()
-    {
-        if (!DocumentoIdentidad.EsRucValido(empresa!.Ruc))
-        {
-            errorRuc = "El RUC no es válido: revisa que tenga 11 dígitos y el dígito verificador.";
-            return;
-        }
-
-        buscando = true;
-        ultimoRucConsultado = empresa.Ruc;
-        try
-        {
-            var datos = await ConsultaDocumentos.ConsultarRucAsync(empresa.Ruc);
-            if (datos is null)
-            {
-                Snackbar.Add("No se encontró el RUC. Completa los datos a mano.", Severity.Warning);
-                return;
-            }
-
-            empresa.RazonSocial = datos.RazonSocial;
-            empresa.NombreComercial = datos.NombreComercial;
-            empresa.Direccion = datos.Direccion;
-            empresa.EstadoSunat = datos.Estado;
-            empresa.CondicionSunat = datos.Condicion;
-        }
-        catch (Exception)
-        {
-            Snackbar.Add("No se pudo consultar el RUC. Revisa tu conexión o completa los datos a mano.", Severity.Error);
-        }
-        finally
-        {
-            buscando = false;
-        }
+        empresa!.RazonSocial = datos.RazonSocial;
+        empresa.NombreComercial = datos.NombreComercial;
+        empresa.Direccion = datos.Direccion;
+        empresa.EstadoSunat = datos.Estado;
+        empresa.CondicionSunat = datos.Condicion;
     }
 
     private async Task GuardarAsync()
@@ -182,11 +135,11 @@ else
 
     private async Task EliminarAsync()
     {
-        var cantidad = await Oportunidades.ContarDeClienteAsync(empresa!.Id);
+        var cantidad = await Oportunidades.ContarDeClienteAsync(empresa!.Id) + await Cotizaciones.ContarDeClienteAsync(empresa.Id);
         if (cantidad > 0)
         {
             Snackbar.Add(
-                $"No se puede eliminar: tiene {cantidad} oportunidad(es) en el pipeline. Elimínalas o cámbialas de cliente primero.",
+                "No se puede eliminar: tiene oportunidades o cotizaciones registradas. Elimínalas o cámbialas de cliente primero.",
                 Severity.Warning);
             return;
         }

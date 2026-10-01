@@ -1,37 +1,20 @@
 using Bunit;
-using Microsoft.Extensions.DependencyInjection;
-using MudBlazor;
-using MudBlazor.Services;
 using Vortex.Domain.Contactos;
-using Vortex.Domain.Ventas;
-using Vortex.Infrastructure.Contactos;
-using Vortex.Infrastructure.Ventas;
 using Vortex.Shared.Pages.Contactos;
 using Xunit;
 
 namespace Vortex.Shared.Tests;
 
-public class EmpresaEditarTests : BunitContext
+public class EmpresaEditarTests : PruebaUi
 {
     private const string RucSunat = "20131312955";
 
-    private readonly RepositorioContactosEnMemoria repositorio = new();
-    private readonly ConsultaDocumentosFalsa consulta = new(TimeSpan.Zero);
-
-    public EmpresaEditarTests()
-    {
-        Services.AddMudServices();
-        Services.AddSingleton<IRepositorioContactos>(repositorio);
-        Services.AddSingleton<IConsultaDocumentos>(consulta);
-        Services.AddSingleton<IRepositorioOportunidades>(new RepositorioOportunidadesEnMemoria());
-        JSInterop.Mode = JSRuntimeMode.Loose;
-        Render<MudPopoverProvider>();
-    }
+    private IRepositorioContactos Repositorio => Servicio<IRepositorioContactos>();
 
     [Fact]
     public async Task IngresarUnRucValidoCompletaLosDatosDeSunat()
     {
-        var esperado = await consulta.ConsultarRucAsync(RucSunat, Xunit.TestContext.Current.CancellationToken);
+        var esperado = await Servicio<IConsultaDocumentos>().ConsultarRucAsync(RucSunat, Ct);
         var pagina = Render<EmpresaEditar>();
 
         pagina.FindAll("input")[0].Input(RucSunat);
@@ -61,7 +44,7 @@ public class EmpresaEditarTests : BunitContext
         pagina.FindAll("button").First(b => b.TextContent.Contains("Guardar")).Click();
 
         pagina.WaitForAssertion(() =>
-            Assert.Single(repositorio.ListarEmpresasAsync().GetAwaiter().GetResult()));
+            Assert.Single(Repositorio.ListarEmpresasAsync().GetAwaiter().GetResult()));
 
         // Una segunda empresa con el mismo RUC se rechaza
         var otra = Render<EmpresaEditar>();
@@ -70,6 +53,6 @@ public class EmpresaEditarTests : BunitContext
         otra.FindAll("button").First(b => b.TextContent.Contains("Guardar")).Click();
 
         otra.WaitForAssertion(() => Assert.Contains("Ya tienes registrada una empresa con este RUC", otra.Markup));
-        Assert.Single(await repositorio.ListarEmpresasAsync(cancellationToken: Xunit.TestContext.Current.CancellationToken));
+        Assert.Single(await Repositorio.ListarEmpresasAsync(cancellationToken: Ct));
     }
 }

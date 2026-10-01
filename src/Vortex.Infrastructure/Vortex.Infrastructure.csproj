@@ -6,6 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Fuentes Open Sans (licencia OFL, ver Recursos/Fuentes/OFL.txt) para los PDF -->
+    <EmbeddedResource Include="Recursos\Fuentes\*.ttf" LogicalName="Vortex.Fuentes.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

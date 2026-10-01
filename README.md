@@ -22,8 +22,8 @@ src/
 ├── Vortex.App/             App MAUI Blazor Hybrid (host nativo, plataformas)
 ├── Vortex.Shared/          Toda la UI: páginas, layout y componentes Razor
 ├── Vortex.Web/             Host web de la misma UI
-├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline)
-└── Vortex.Infrastructure/  Datos e integraciones externas
+├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline, cotizaciones)
+└── Vortex.Infrastructure/  Datos, integraciones externas y generación de PDF
 tests/
 ├── Vortex.Domain.Tests/    Tests de dominio e infraestructura
 └── Vortex.Shared.Tests/    Tests de componentes con bUnit
@@ -79,7 +79,7 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia, ícono | ✅ |
-| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones en PEN con IGV, tareas, catálogo, ubigeo | 🚧 |
+| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones con IGV, PDF y WhatsApp ✅, tareas, catálogo, ubigeo | 🚧 |
 | 2 | API, SQL Server, multiempresa, autenticación, sincronización offline | ⏳ |
 | 3 | Facturación electrónica SUNAT (vía PSE/OSE), WhatsApp Business, cobros | ⏳ |
 | 4 | IA: resúmenes de conversaciones, lead scoring, redacción de mensajes | ⏳ |
@@ -88,3 +88,9 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 ## Licencia
 
 Distribuido bajo la **GNU Affero General Public License v3.0 o posterior**. Consulta [LICENSE](LICENSE).
+
+## Componentes de terceros
+
+- [MudBlazor](https://mudblazor.com/) (MIT): componentes de interfaz
+- [PDFsharp / MigraDoc](https://www.pdfsharp.com/) (MIT): PDF de las cotizaciones, en código .NET sin dependencias nativas, así que funciona igual en Android, Windows y el servidor
+- [Open Sans](https://github.com/googlefonts/opensans) (SIL Open Font License, ver `src/Vortex.Infrastructure/Recursos/Fuentes/OFL.txt`): fuente de los PDF

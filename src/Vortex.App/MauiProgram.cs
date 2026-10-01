@@ -3,6 +3,8 @@ using System.Globalization;
 using MudBlazor.Services;
 using Vortex.Domain.Comun;
 using Vortex.Infrastructure;
+using Vortex.Servicios;
+using Vortex.Shared.Servicios;
 
 namespace Vortex;
 
@@ -25,6 +27,7 @@ public static class MauiProgram
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddMudServices();
         builder.Services.AddVortexInfraestructura();
+        builder.Services.AddSingleton<IServicioArchivos, ServicioArchivosMaui>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

@@ -5,6 +5,7 @@
 @inject NavigationManager Navegacion
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogos
+@inject IRepositorioCotizaciones Cotizaciones
 
 <PageTitle>@Titulo · Vortex CRM</PageTitle>
 
@@ -97,6 +98,11 @@ else
                 <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="EliminarAsync">Eliminar</MudButton>
             }
             <MudButton Variant="Variant.Text" Href="pipeline">Cancelar</MudButton>
+            @if (Id is not null)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.RequestQuote"
+                           Href="@($"cotizaciones/nueva?oportunidad={Id}")">Crear cotización</MudButton>
+            }
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarAsync">Guardar</MudButton>
         </MudStack>
     </MudPaper>
@@ -165,13 +171,14 @@ else
     {
         var confirmado = await Dialogos.ShowMessageBoxAsync(
             "Eliminar oportunidad",
-            $"¿Eliminar \"{oportunidad!.Titulo}\"?",
+            $"¿Eliminar \"{oportunidad!.Titulo}\"? Sus cotizaciones se conservan.",
             yesText: "Eliminar",
             cancelText: "Cancelar");
 
         if (confirmado == true)
         {
             await Oportunidades.EliminarAsync(oportunidad.Id);
+            await Cotizaciones.DesvincularOportunidadAsync(oportunidad.Id);
             Snackbar.Add("Oportunidad eliminada.", Severity.Success);
             Navegacion.NavigateTo("pipeline");
         }

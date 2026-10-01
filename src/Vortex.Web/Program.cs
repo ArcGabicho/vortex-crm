@@ -2,7 +2,9 @@ using System.Globalization;
 using MudBlazor.Services;
 using Vortex.Domain.Comun;
 using Vortex.Infrastructure;
+using Vortex.Shared.Servicios;
 using Vortex.Web.Components;
+using Vortex.Web.Servicios;
 
 // Fechas, calendario y números en español de Perú, sin importar la configuración del servidor
 CultureInfo.DefaultThreadCurrentCulture = FormatoPeru.Cultura;
@@ -15,6 +17,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 builder.Services.AddVortexInfraestructura();
+builder.Services.AddScoped<IServicioArchivos, ServicioArchivosWeb>();
 
 var app = builder.Build();
 
