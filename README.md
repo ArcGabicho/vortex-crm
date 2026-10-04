@@ -22,7 +22,7 @@ src/
 ├── Vortex.App/             App MAUI Blazor Hybrid (host nativo, plataformas)
 ├── Vortex.Shared/          Toda la UI: páginas, layout y componentes Razor
 ├── Vortex.Web/             Host web de la misma UI
-├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline, cotizaciones, catálogo)
+├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline, cotizaciones, catálogo, tareas)
 └── Vortex.Infrastructure/  Datos, integraciones externas y generación de PDF
 tests/
 ├── Vortex.Domain.Tests/    Tests de dominio e infraestructura
@@ -32,6 +32,8 @@ tests/
 La UI se escribe **una sola vez** en `Vortex.Shared` y la usan tanto la app como la web.
 
 > **Estado temporal:** los datos se guardan en memoria y se pierden al cerrar la app. Hasta la Fase 2 la versión web los comparte entre todos los visitantes. La consulta de RUC/DNI usa un proveedor de prueba que inventa los datos (`ConsultaDocumentosFalsa`). Para simular "no encontrado", usa un DNI que termine en `0000` o un RUC cuyos dígitos 7 a 10 sean `0000` (por ejemplo `20600000005`).
+
+> **Recordatorios de tareas:** solo la app de Android los muestra como notificación. Pueden llegar con unos minutos de atraso (así no hace falta el permiso de alarmas exactas) y se pierden si se reinicia el celular. En la web y en Windows las tareas pendientes se ven en Inicio.
 
 ## Requisitos
 
@@ -45,7 +47,7 @@ La UI se escribe **una sola vez** en `Vortex.Shared` y la usan tanto la app como
 dotnet run --project src/Vortex.Web
 
 # App de Windows
-dotnet build src/Vortex.App -f net10.0-windows10.0.19041.0 -t:Run
+dotnet run --project src/Vortex.App -f net10.0-windows10.0.19041.0
 
 # App de Android (con un emulador o equipo conectado)
 dotnet build src/Vortex.App -f net10.0-android -t:Run
@@ -79,7 +81,7 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia, ícono | ✅ |
-| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones con IGV, PDF y WhatsApp ✅, catálogo ✅, tareas, ubigeo | 🚧 |
+| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones con IGV, PDF y WhatsApp ✅, catálogo ✅, tareas y recordatorios ✅, ubigeo | 🚧 |
 | 2 | API, SQL Server, multiempresa, autenticación, sincronización offline | ⏳ |
 | 3 | Facturación electrónica SUNAT (vía PSE/OSE), WhatsApp Business, cobros | ⏳ |
 | 4 | IA: resúmenes de conversaciones, lead scoring, redacción de mensajes | ⏳ |

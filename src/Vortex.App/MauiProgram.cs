@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using System.Globalization;
 using MudBlazor.Services;
 using Vortex.Domain.Comun;
+using Vortex.Domain.Tareas;
 using Vortex.Infrastructure;
 using Vortex.Servicios;
 using Vortex.Shared.Servicios;
@@ -28,6 +29,10 @@ public static class MauiProgram
         builder.Services.AddMudServices();
         builder.Services.AddVortexInfraestructura();
         builder.Services.AddSingleton<IServicioArchivos, ServicioArchivosMaui>();
+#if ANDROID
+        // Reemplaza a SinRecordatorios: en Android los avisos de tareas son notificaciones del sistema
+        builder.Services.AddSingleton<IServicioRecordatorios, ServicioRecordatoriosAndroid>();
+#endif
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

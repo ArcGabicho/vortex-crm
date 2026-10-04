@@ -7,6 +7,7 @@
 @inject IDialogService Dialogos
 @inject IRepositorioOportunidades Oportunidades
 @inject IRepositorioCotizaciones Cotizaciones
+@inject IRepositorioTareas Tareas
 
 <PageTitle>@Titulo · Vortex CRM</PageTitle>
 
@@ -88,6 +89,11 @@ else
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarAsync" Disabled="buscando">Guardar</MudButton>
         </MudStack>
     </MudPaper>
+
+    @if (Id is not null)
+    {
+        <TareasDe RelacionadoId="Id.Value" Parametro="contacto" Volver="@($"contactos/{Id}")" />
+    }
 }
 
 @code {
@@ -195,6 +201,7 @@ else
         if (confirmado == true)
         {
             await Repositorio.EliminarContactoAsync(contacto.Id);
+            await Tareas.DesvincularAsync(contacto.Id);
             Snackbar.Add("Contacto eliminado.", Severity.Success);
             Navegacion.NavigateTo("contactos");
         }

@@ -68,7 +68,7 @@ else
                 <MudCard Elevation="1" Class="tarjeta">
                     <MudCardContent Class="pa-3">
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Spacing="1">
-                            <MudLink Href="@($"oportunidades/{context.Id}")" Typo="Typo.body1">@context.Titulo</MudLink>
+                            <a href="@($"oportunidades/{context.Id}")" class="titulo">@context.Titulo</a>
                             <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense
                                      AriaLabel="Mover oportunidad" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 @foreach (var destino in Etapas.Todas.Where(e => e != context.Etapa))

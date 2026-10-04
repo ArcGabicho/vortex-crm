@@ -21,6 +21,19 @@ public static class FormatoPeru
     public static DateOnly Hoy(TimeProvider? reloj = null) =>
         DateOnly.FromDateTime((reloj ?? TimeProvider.System).GetUtcNow().ToOffset(ZonaHoraria).DateTime);
 
+    /// <summary>Formatea una hora como se usa en Perú: <c>9:00 a. m.</c>, <c>4:30 p. m.</c></summary>
+    public static string Hora(TimeOnly hora) => hora.ToString("h:mm tt", Cultura);
+
+    /// <summary>"Hoy", "Mañana" o "Ayer"; si no, la fecha corta ("lun. 5 oct."), con el año si no es el actual.</summary>
+    public static string FechaRelativa(DateOnly fecha, DateOnly hoy) => (fecha.DayNumber - hoy.DayNumber) switch
+    {
+        0 => "Hoy",
+        1 => "Mañana",
+        -1 => "Ayer",
+        _ when fecha.Year == hoy.Year => fecha.ToString("ddd d MMM", Cultura),
+        _ => fecha.ToString("d MMM yyyy", Cultura),
+    };
+
     private static CultureInfo CrearCultura()
     {
         CultureInfo cultura;
@@ -47,6 +60,9 @@ public static class FormatoPeru
         numeros.PercentGroupSeparator = ",";
         numeros.PercentPositivePattern = 1; // n%
         numeros.PercentNegativePattern = 1; // -n%
+
+        cultura.DateTimeFormat.AMDesignator = "a. m.";
+        cultura.DateTimeFormat.PMDesignator = "p. m.";
 
         return CultureInfo.ReadOnly(cultura);
     }
