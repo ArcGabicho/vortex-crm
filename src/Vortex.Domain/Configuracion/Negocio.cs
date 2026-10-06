@@ -27,6 +27,9 @@ public sealed class Negocio
 
     public string? Direccion { get; set; }
 
+    /// <summary>Código de ubigeo del INEI del distrito del domicilio fiscal (ver <see cref="Comun.Ubigeo"/>).</summary>
+    public string? Ubigeo { get; set; }
+
     public string? Telefono { get; set; }
 
     public string? Email { get; set; }
@@ -35,6 +38,12 @@ public sealed class Negocio
 
     /// <summary>Condiciones que se copian en cada cotización nueva (forma de pago, entrega, etc.).</summary>
     public string? CondicionesPredeterminadas { get; set; }
+
+    /// <summary>
+    /// Los locales del negocio. Con uno solo puede quedar vacía: el local es el domicilio fiscal
+    /// (la dirección de arriba). Con varios, cada instalación de la app se asigna a uno.
+    /// </summary>
+    public List<Sucursal> Sucursales { get; private set; } = [];
 
     public string NombreVisible =>
         string.IsNullOrWhiteSpace(NombreComercial) ? RazonSocial : NombreComercial;
@@ -58,10 +67,31 @@ public sealed class Negocio
             errores.Add("El RUC no es válido.");
         }
 
+        if (Ubigeo is not null && !Comun.Ubigeo.EsCodigoValido(Ubigeo))
+        {
+            errores.Add("El distrito no es válido.");
+        }
+
+        errores.AddRange(Sucursales.SelectMany(s => s.Validar()));
+
+        foreach (var repetido in Sucursales.GroupBy(s => s.CodigoEstablecimiento).Where(g => g.Count() > 1))
+        {
+            errores.Add($"Hay más de una sucursal con el código de establecimiento {repetido.Key}.");
+        }
+
         return errores;
     }
 
-    public Negocio Clonar() => (Negocio)MemberwiseClone();
+    /// <summary>Por código de establecimiento: primero el domicilio fiscal (0000) y luego los anexos.</summary>
+    public void OrdenarSucursales() =>
+        Sucursales.Sort((a, b) => string.CompareOrdinal(a.CodigoEstablecimiento, b.CodigoEstablecimiento));
+
+    public Negocio Clonar()
+    {
+        var copia = (Negocio)MemberwiseClone();
+        copia.Sucursales = Sucursales.Select(s => s.Clonar()).ToList();
+        return copia;
+    }
 }
 
 public static class Regimenes

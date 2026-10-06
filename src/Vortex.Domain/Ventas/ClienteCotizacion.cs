@@ -1,3 +1,4 @@
+using Vortex.Domain.Comun;
 using Vortex.Domain.Contactos;
 
 namespace Vortex.Domain.Ventas;
@@ -14,15 +15,16 @@ public sealed record ClienteCotizacion(
     /// <summary>
     /// Arma los datos del cliente: con empresa, la cotización va a su razón social y RUC,
     /// "a la atención de" la persona de contacto; sin empresa, va a nombre de la persona.
+    /// Con <paramref name="ubigeos"/>, la dirección lleva el distrito, la provincia y el departamento.
     /// </summary>
-    public static ClienteCotizacion Crear(Empresa? empresa, Contacto? contacto)
+    public static ClienteCotizacion Crear(Empresa? empresa, Contacto? contacto, CatalogoUbigeos? ubigeos = null)
     {
         if (empresa is not null)
         {
             return new ClienteCotizacion(
                 empresa.RazonSocial,
                 $"RUC {empresa.Ruc}",
-                empresa.Direccion,
+                ubigeos?.DireccionCompleta(empresa.Direccion, empresa.Ubigeo) ?? empresa.Direccion,
                 contacto?.NombreCompleto,
                 contacto?.Telefono ?? empresa.Telefono,
                 contacto?.Email ?? empresa.Email);

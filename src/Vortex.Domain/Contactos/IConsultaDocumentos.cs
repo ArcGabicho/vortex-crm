@@ -22,7 +22,8 @@ public sealed record DatosRuc(
     string? NombreComercial,
     string? Direccion,
     string Estado,
-    string Condicion);
+    string Condicion,
+    string? Ubigeo = null);
 
 public sealed record DatosDni(
     string Dni,

@@ -8,9 +8,11 @@ using Vortex.Domain.Ventas;
 namespace Vortex.Infrastructure.Ventas.Pdf;
 
 /// <summary>Genera el PDF de una cotización (A4) con PDFsharp/MigraDoc, sin dependencias nativas.</summary>
-public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
+/// <param name="ubigeos">Para escribir el distrito, la provincia y el departamento después de la dirección del negocio.</param>
+public sealed class GeneradorPdfCotizaciones(CatalogoUbigeos? ubigeos = null) : IGeneradorPdfCotizaciones
 {
-    private static readonly Color Indigo = new(0x4F, 0x46, 0xE5);
+    /// <summary>El naranja de la marca Vortex.</summary>
+    private static readonly Color Marca = new(0xF2, 0x73, 0x3A);
     private static readonly Color GrisClaro = new(0xF3, 0xF4, 0xF6);
     private static readonly Color GrisTexto = new(0x6B, 0x72, 0x80);
 
@@ -34,7 +36,7 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
         seccion.PageSetup.LeftMargin = Unit.FromCentimeter(1.8);
         seccion.PageSetup.RightMargin = Unit.FromCentimeter(1.8);
 
-        AgregarEncabezado(seccion, cotizacion, negocio);
+        AgregarEncabezado(seccion, cotizacion, negocio, ubigeos?.DireccionCompleta(negocio.Direccion, negocio.Ubigeo) ?? negocio.Direccion);
         AgregarCliente(seccion, cliente);
         AgregarLineas(seccion, cotizacion);
         AgregarTotales(seccion, cotizacion);
@@ -53,7 +55,7 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
         return memoria.ToArray();
     }
 
-    private static void AgregarEncabezado(Section seccion, Cotizacion cotizacion, Negocio negocio)
+    private static void AgregarEncabezado(Section seccion, Cotizacion cotizacion, Negocio negocio, string? direccion)
     {
         var tabla = seccion.AddTable();
         tabla.AddColumn(Unit.FromCentimeter(11.4));
@@ -66,7 +68,7 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
         var nombre = emisor.AddParagraph(negocio.NombreVisible);
         nombre.Format.Font.Size = 16;
         nombre.Format.Font.Bold = true;
-        nombre.Format.Font.Color = Indigo;
+        nombre.Format.Font.Color = Marca;
 
         if (!string.IsNullOrWhiteSpace(negocio.NombreComercial) && negocio.NombreComercial != negocio.RazonSocial)
         {
@@ -74,12 +76,12 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
         }
 
         AgregarSiHay(emisor, string.IsNullOrWhiteSpace(negocio.Ruc) ? null : $"RUC {negocio.Ruc}");
-        AgregarSiHay(emisor, negocio.Direccion);
+        AgregarSiHay(emisor, direccion);
         AgregarSiHay(emisor, Unir(" · ", negocio.Telefono, negocio.Email));
 
         // Recuadro con el número
         var recuadro = fila.Cells[1];
-        recuadro.Shading.Color = Indigo;
+        recuadro.Shading.Color = Marca;
         recuadro.Format.Alignment = ParagraphAlignment.Center;
         fila.TopPadding = Unit.FromCentimeter(0.3);
         fila.BottomPadding = Unit.FromCentimeter(0.3);
@@ -145,7 +147,7 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
 
         var encabezado = tabla.AddRow();
         encabezado.HeadingFormat = true;
-        encabezado.Shading.Color = Indigo;
+        encabezado.Shading.Color = Marca;
         encabezado.Format.Font.Bold = true;
         encabezado.Format.Font.Color = Colors.White;
         string[] titulos = ["N°", "Descripción", "Cant.", "Unid.", "P. unit.", "Importe"];
@@ -219,7 +221,7 @@ public sealed class GeneradorPdfCotizaciones : IGeneradorPdfCotizaciones
 
         if (destacada)
         {
-            fila.Shading.Color = Indigo;
+            fila.Shading.Color = Marca;
             fila.Format.Font.Bold = true;
             fila.Format.Font.Size = 10;
             fila.Format.Font.Color = Colors.White;

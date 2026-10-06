@@ -1,4 +1,5 @@
 using Bunit;
+using Vortex.Domain.Comun;
 using Vortex.Domain.Contactos;
 using Vortex.Shared.Pages.Contactos;
 using Xunit;
@@ -22,6 +23,36 @@ public class EmpresaEditarTests : PruebaUi
         pagina.WaitForAssertion(() =>
             Assert.Equal(esperado!.RazonSocial, pagina.FindAll("input")[1].GetAttribute("value")));
         Assert.Contains("modo de prueba", pagina.Markup);
+    }
+
+    [Fact]
+    public async Task ElRucTambienCompletaElDistritoYSeGuardaSuUbigeo()
+    {
+        var esperado = await Servicio<IConsultaDocumentos>().ConsultarRucAsync(RucSunat, Ct);
+        var distrito = Servicio<CatalogoUbigeos>().Obtener(esperado!.Ubigeo)!;
+        var pagina = Render<EmpresaEditar>();
+
+        pagina.FindAll("input")[0].Input(RucSunat);
+        pagina.WaitForAssertion(() =>
+            Assert.Equal(distrito.Descripcion, pagina.Find("[data-campo-ubigeo] input").GetAttribute("value")));
+
+        pagina.FindAll("button").First(b => b.TextContent.Contains("Guardar")).Click();
+
+        pagina.WaitForAssertion(() =>
+            Assert.Equal(distrito.Codigo, Repositorio.ListarEmpresasAsync().GetAwaiter().GetResult().Single().Ubigeo));
+    }
+
+    [Fact]
+    public void ElDistritoSeBuscaPorNombreYSeEligeDeLaLista()
+    {
+        var pagina = Render<EmpresaEditar>();
+
+        pagina.Find("[data-campo-ubigeo] input").Input("miraflores arequipa");
+        Popovers.WaitForAssertion(() => Assert.Contains("MIRAFLORES", Popovers.Markup));
+        Popovers.FindAll(".vx-ubigeo-opcion").Single().Click();
+
+        pagina.WaitForAssertion(() =>
+            Assert.Equal("MIRAFLORES - AREQUIPA - AREQUIPA", pagina.Find("[data-campo-ubigeo] input").GetAttribute("value")));
     }
 
     [Fact]

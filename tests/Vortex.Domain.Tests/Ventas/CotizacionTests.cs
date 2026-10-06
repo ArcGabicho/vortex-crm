@@ -1,3 +1,4 @@
+using Vortex.Domain.Comun;
 using Vortex.Domain.Configuracion;
 using Vortex.Domain.Contactos;
 using Vortex.Domain.Ventas;
@@ -152,6 +153,16 @@ public class CotizacionTests
         Assert.Equal("RUC 20131312955", cliente.Documento);
         Assert.Equal("Rosa Quispe", cliente.Atencion);
         Assert.Equal("987654321", cliente.Telefono);
+    }
+
+    [Fact]
+    public void LaDireccionDelClienteLlevaSuDistritoSiSeDaElCatalogo()
+    {
+        var empresa = new Empresa { Ruc = "20131312955", RazonSocial = "TEXTILES ANDINA S.A.C.", Direccion = "Av. Larco 123", Ubigeo = "150122" };
+        var ubigeos = new CatalogoUbigeos([new Ubigeo("150122", "LIMA", "LIMA", "MIRAFLORES")]);
+
+        Assert.Equal("Av. Larco 123, MIRAFLORES - LIMA - LIMA", ClienteCotizacion.Crear(empresa, null, ubigeos).Direccion);
+        Assert.Equal("Av. Larco 123", ClienteCotizacion.Crear(empresa, null).Direccion);
     }
 
     [Fact]

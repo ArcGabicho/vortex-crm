@@ -22,6 +22,14 @@ public class EntidadesTests
     }
 
     [Fact]
+    public void EmpresaConUbigeoMalFormadoTieneError()
+    {
+        var empresa = new Empresa { Ruc = "20131312955", RazonSocial = "SUNAT", Ubigeo = "1501" };
+
+        Assert.Equal(["El distrito no es válido."], empresa.Validar());
+    }
+
+    [Fact]
     public void NombreVisiblePrefiereElNombreComercial()
     {
         var empresa = new Empresa { RazonSocial = "INVERSIONES ANDINA S.A.C.", NombreComercial = "Andina" };

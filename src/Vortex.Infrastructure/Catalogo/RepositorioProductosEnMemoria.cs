@@ -1,10 +1,11 @@
 using Vortex.Domain.Catalogo;
+using Vortex.Infrastructure.Comun;
 
 namespace Vortex.Infrastructure.Catalogo;
 
 /// <summary>
-/// Repositorio temporal en memoria: los datos se pierden al cerrar la app. Se
-/// reemplazará por SQLite (app) y SQL Server (API) en la Fase 2.
+/// Repositorio en memoria para los tests: los datos se pierden al cerrar. La app y la web
+/// usan la base de datos (ver Datos/RepositoriosSql.cs).
 /// </summary>
 /// <remarks>Guarda y devuelve copias, igual que los demás repositorios en memoria.</remarks>
 public sealed class RepositorioProductosEnMemoria : IRepositorioProductos
@@ -18,7 +19,7 @@ public sealed class RepositorioProductosEnMemoria : IRepositorioProductos
         {
             IReadOnlyList<Producto> resultado = productos.Values
                 .Where(p => incluirInactivos || p.Activo)
-                .Where(p => Coincide(filtro, p.Nombre, p.Codigo, p.Descripcion))
+                .Where(p => Filtro.Coincide(filtro, p.Nombre, p.Codigo, p.Descripcion))
                 .OrderBy(p => p.Nombre, StringComparer.CurrentCultureIgnoreCase)
                 .Select(p => p.Clonar())
                 .ToList();
@@ -62,8 +63,4 @@ public sealed class RepositorioProductosEnMemoria : IRepositorioProductos
 
         return Task.CompletedTask;
     }
-
-    private static bool Coincide(string? filtro, params string?[] campos) =>
-        string.IsNullOrWhiteSpace(filtro)
-        || campos.Any(c => c?.Contains(filtro.Trim(), StringComparison.CurrentCultureIgnoreCase) == true);
 }

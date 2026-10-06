@@ -3,8 +3,8 @@ using Vortex.Domain.Ventas;
 namespace Vortex.Infrastructure.Ventas;
 
 /// <summary>
-/// Repositorio temporal en memoria: los datos se pierden al cerrar la app. Se
-/// reemplazará por SQLite (app) y SQL Server (API) en la Fase 2.
+/// Repositorio en memoria para los tests: los datos se pierden al cerrar. La app y la web
+/// usan la base de datos (ver Datos/RepositoriosSql.cs).
 /// </summary>
 /// <remarks>Guarda y devuelve copias, igual que el repositorio de contactos.</remarks>
 public sealed class RepositorioOportunidadesEnMemoria : IRepositorioOportunidades

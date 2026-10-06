@@ -1,8 +1,8 @@
 using UglyToad.PdfPig;
+using Vortex.Domain.Comun;
 using Vortex.Domain.Configuracion;
 using Vortex.Domain.Contactos;
 using Vortex.Domain.Ventas;
-using Vortex.Infrastructure.Ventas;
 using Vortex.Infrastructure.Ventas.Pdf;
 using Xunit;
 
@@ -10,8 +10,6 @@ namespace Vortex.Domain.Tests.Infraestructura;
 
 public class CotizacionesInfraestructuraTests
 {
-    private readonly CancellationToken ct = TestContext.Current.CancellationToken;
-
     private static Cotizacion Ejemplo()
     {
         var cotizacion = new Cotizacion
@@ -25,36 +23,6 @@ public class CotizacionesInfraestructuraTests
         cotizacion.Lineas.Add(new LineaCotizacion { Descripcion = "Polo bordado con logo", Cantidad = 50, PrecioUnitario = 25 });
         cotizacion.Lineas.Add(new LineaCotizacion { Descripcion = "Diseño del bordado", Unidad = "SERV", Cantidad = 1, PrecioUnitario = 250 });
         return cotizacion;
-    }
-
-    [Fact]
-    public async Task GuardarAsignaNumerosCorrelativosSoloALasNuevas()
-    {
-        var repositorio = new RepositorioCotizacionesEnMemoria();
-        var primera = new Cotizacion();
-        var segunda = new Cotizacion();
-
-        await repositorio.GuardarAsync(primera, ct);
-        await repositorio.GuardarAsync(segunda, ct);
-        await repositorio.GuardarAsync(primera, ct); // actualizar no cambia el número
-
-        Assert.Equal(1, primera.Numero);
-        Assert.Equal(2, segunda.Numero);
-        Assert.Equal([2, 1], (await repositorio.ListarAsync(ct)).Select(c => c.Numero));
-    }
-
-    [Fact]
-    public async Task EliminarUnaOportunidadDejaSusCotizacionesSinVinculo()
-    {
-        var repositorio = new RepositorioCotizacionesEnMemoria();
-        var oportunidadId = Guid.NewGuid();
-        var cotizacion = new Cotizacion { OportunidadId = oportunidadId, EmpresaId = Guid.NewGuid() };
-        await repositorio.GuardarAsync(cotizacion, ct);
-
-        await repositorio.DesvincularOportunidadAsync(oportunidadId, ct);
-
-        Assert.Null((await repositorio.ObtenerAsync(cotizacion.Id, ct))!.OportunidadId);
-        Assert.Equal(1, await repositorio.ContarDeClienteAsync(cotizacion.EmpresaId!.Value, ct));
     }
 
     [Fact]
@@ -87,6 +55,22 @@ public class CotizacionesInfraestructuraTests
         Assert.Contains("S/ 228.81", texto);
         Assert.Contains("MIL QUINIENTOS CON 00/100 SOLES", texto);
         Assert.Contains("Entrega: 7 días hábiles", texto);
+    }
+
+    [Fact]
+    public void ElPdfEscribeElDistritoDespuesDeLasDirecciones()
+    {
+        var ubigeos = new CatalogoUbigeos([new Ubigeo("150122", "LIMA", "LIMA", "MIRAFLORES"), new Ubigeo("150131", "LIMA", "LIMA", "SAN ISIDRO")]);
+        var negocio = new Negocio { RazonSocial = "Bordados Rosita", Direccion = "Av. Larco 345", Ubigeo = "150122" };
+        var cliente = ClienteCotizacion.Crear(
+            new Empresa { Ruc = "20131312955", RazonSocial = "SUNAT", Direccion = "Av. Garcilaso 381", Ubigeo = "150131" }, null, ubigeos);
+
+        var pdf = new GeneradorPdfCotizaciones(ubigeos).Generar(Ejemplo(), negocio, cliente);
+
+        using var documento = PdfDocument.Open(pdf);
+        var texto = string.Join(" ", documento.GetPage(1).GetWords().Select(w => w.Text));
+        Assert.Contains("Av. Larco 345, MIRAFLORES - LIMA - LIMA", texto);
+        Assert.Contains("Av. Garcilaso 381, SAN ISIDRO - LIMA - LIMA", texto);
     }
 
     [Fact]

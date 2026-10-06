@@ -11,8 +11,8 @@ El CRM para emprendedores peruanos: clientes, ventas, cotizaciones y seguimiento
 - **App nativa:** .NET MAUI Blazor Hybrid (.NET 10): Android, iOS, Windows y macOS
 - **Web:** Blazor Web App, que reutiliza los mismos componentes que la app
 - **UI:** [MudBlazor](https://mudblazor.com/)
-- **Backend:** ASP.NET Core Minimal API *(Fase 2)*
-- **Base de datos:** SQL Server con EF Core *(Fase 2)*; SQLite local para el modo offline
+- **Backend:** ASP.NET Core Minimal API *(Fase 2, para varias sucursales)*
+- **Base de datos:** EF Core con SQLite en el propio equipo (una sucursal) y SQL Server en el servidor *(Fase 2, para varias sucursales)*
 - **Tests:** xUnit + bUnit
 
 ## Estructura
@@ -22,7 +22,7 @@ src/
 ├── Vortex.App/             App MAUI Blazor Hybrid (host nativo, plataformas)
 ├── Vortex.Shared/          Toda la UI: páginas, layout y componentes Razor
 ├── Vortex.Web/             Host web de la misma UI
-├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, contactos, pipeline, cotizaciones, catálogo, tareas)
+├── Vortex.Domain/          Entidades y reglas de negocio (RUC, DNI, ubigeo, contactos, pipeline, cotizaciones, catálogo, tareas)
 └── Vortex.Infrastructure/  Datos, integraciones externas y generación de PDF
 tests/
 ├── Vortex.Domain.Tests/    Tests de dominio e infraestructura
@@ -31,7 +31,26 @@ tests/
 
 La UI se escribe **una sola vez** en `Vortex.Shared` y la usan tanto la app como la web.
 
-> **Estado temporal:** los datos se guardan en memoria y se pierden al cerrar la app. Hasta la Fase 2 la versión web los comparte entre todos los visitantes. La consulta de RUC/DNI usa un proveedor de prueba que inventa los datos (`ConsultaDocumentosFalsa`). Para simular "no encontrado", usa un DNI que termine en `0000` o un RUC cuyos dígitos 7 a 10 sean `0000` (por ejemplo `20600000005`).
+## Dónde se guardan los datos
+
+Cada instalación elige su modo en **Datos y sucursales**, una pantalla protegida con la clave de administrador (se crea la primera vez que se entra):
+
+- **En este equipo** (por defecto): una base SQLite en la carpeta privada de la app (`vortex.db`, en Windows instalada desde la Store dentro de la carpeta del paquete). Es para un negocio de una sola sucursal y no hace falta instalar nada más.
+- **En el servidor de Vortex** *(próximamente)*: todas las sucursales comparten los datos en SQL Server a través de la API.
+
+La configuración de la instalación (modo, sucursal del equipo y el hash de la clave; nunca la clave) va en `instalacion.json`, junto a la base. La web guarda ambos en `src/Vortex.Web/App_Data/` (o en la carpeta de `Datos:Carpeta` en `appsettings.json`). La base se crea y se actualiza sola al abrir la app.
+
+Para cambiar el modelo de datos, se agrega una migración (la herramienta `dotnet-ef` está en el manifiesto del repo):
+
+```bash
+dotnet tool restore
+```
+
+```bash
+dotnet ef migrations add NombreDelCambio --project src/Vortex.Infrastructure --context VortexDbContextSqlite --output-dir Datos/Migraciones/Sqlite --namespace Vortex.Infrastructure.Datos.Migraciones.Sqlite
+```
+
+> **Datos de prueba:** la consulta de RUC/DNI usa un proveedor de prueba que inventa los datos (`ConsultaDocumentosFalsa`). Para simular "no encontrado", usa un DNI que termine en `0000` o un RUC cuyos dígitos 7 a 10 sean `0000` (por ejemplo `20600000005`).
 
 > **Recordatorios de tareas:** solo la app de Android los muestra como notificación. Pueden llegar con unos minutos de atraso (así no hace falta el permiso de alarmas exactas) y se pierden si se reinicia el celular. En la web y en Windows las tareas pendientes se ven en Inicio.
 
@@ -81,8 +100,8 @@ Cada envío a la Store necesita una versión mayor que la anterior. La versión 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Fundaciones: Blazor Hybrid + Web, MudBlazor, CI, licencia, ícono | ✅ |
-| 1 | MVP: contactos (RUC/DNI) ✅, pipeline ✅, cotizaciones con IGV, PDF y WhatsApp ✅, catálogo ✅, tareas y recordatorios ✅, ubigeo | 🚧 |
-| 2 | API, SQL Server, multiempresa, autenticación, sincronización offline | ⏳ |
+| 1 | MVP: contactos (RUC/DNI), pipeline, cotizaciones con IGV, PDF y WhatsApp, catálogo, tareas y recordatorios, ubigeo | ✅ |
+| 2 | Base local SQLite ✅, sucursales ✅, configuración protegida de la instalación ✅, API con SQL Server para varias sucursales, autenticación, sincronización offline | 🚧 |
 | 3 | Facturación electrónica SUNAT (vía PSE/OSE), WhatsApp Business, cobros | ⏳ |
 | 4 | IA: resúmenes de conversaciones, lead scoring, redacción de mensajes | ⏳ |
 | 5 | Lanzamiento: Play Store, web, Windows | ⏳ |
@@ -96,3 +115,4 @@ Distribuido bajo la **GNU Affero General Public License v3.0 o posterior**. Cons
 - [MudBlazor](https://mudblazor.com/) (MIT): componentes de interfaz
 - [PDFsharp / MigraDoc](https://www.pdfsharp.com/) (MIT): PDF de las cotizaciones, en código .NET sin dependencias nativas, así que funciona igual en Android, Windows y el servidor
 - [Open Sans](https://github.com/googlefonts/opensans) (SIL Open Font License, ver `src/Vortex.Infrastructure/Recursos/Fuentes/OFL.txt`): fuente de los PDF
+- [ubigeo-peru-aumentado](https://github.com/jmcastagnetto/ubigeo-peru-aumentado) (MIT, ver `src/Vortex.Infrastructure/Recursos/Ubigeo/LICENSE.txt`): códigos y nombres de los 1 892 distritos del INEI, que viajan dentro de la app para elegir el distrito sin conexión

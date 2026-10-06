@@ -2,7 +2,7 @@ using Vortex.Domain.Configuracion;
 
 namespace Vortex.Infrastructure.Configuracion;
 
-/// <summary>Datos del negocio en memoria, hasta la Fase 2.</summary>
+/// <summary>Datos del negocio en memoria, para los tests.</summary>
 public sealed class RepositorioNegocioEnMemoria : IRepositorioNegocio
 {
     private readonly Lock candado = new();
@@ -12,7 +12,9 @@ public sealed class RepositorioNegocioEnMemoria : IRepositorioNegocio
     {
         lock (candado)
         {
-            return Task.FromResult(negocio.Clonar());
+            var copia = negocio.Clonar();
+            copia.OrdenarSucursales();
+            return Task.FromResult(copia);
         }
     }
 

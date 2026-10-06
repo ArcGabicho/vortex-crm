@@ -4,6 +4,8 @@ using MudBlazor.Services;
 using Vortex.Domain.Comun;
 using Vortex.Domain.Tareas;
 using Vortex.Infrastructure;
+using Vortex.Infrastructure.Configuracion;
+using Vortex.Infrastructure.Datos;
 using Vortex.Servicios;
 using Vortex.Shared.Servicios;
 
@@ -27,7 +29,12 @@ public static class MauiProgram
 
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddMudServices();
-        builder.Services.AddVortexInfraestructura();
+        // Los datos y la configuración de la instalación van en la carpeta privada de la app
+        // (en Windows instalada desde la Store, la del paquete; en Android, la de la app)
+        var carpeta = FileSystem.AppDataDirectory;
+        var configuracion = new AlmacenConfiguracionArchivo(Path.Combine(carpeta, "instalacion.json"));
+        builder.Services.AddVortexInfraestructura(
+            OpcionesDatos.SegunConfiguracion(configuracion, Path.Combine(carpeta, "vortex.db")));
         builder.Services.AddSingleton<IServicioArchivos, ServicioArchivosMaui>();
 #if ANDROID
         // Reemplaza a SinRecordatorios: en Android los avisos de tareas son notificaciones del sistema
@@ -39,6 +46,8 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        app.Services.PrepararBaseDeDatos();
+        return app;
     }
 }

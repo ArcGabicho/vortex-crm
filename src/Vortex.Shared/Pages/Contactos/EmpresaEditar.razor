@@ -39,17 +39,20 @@ else
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="empresa.RazonSocial" Label="Razón social" Required />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="empresa.NombreComercial" Label="Nombre comercial" />
             </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="empresa.Direccion" Label="Dirección fiscal" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="6" md="3">
                 <MudTextField @bind-Value="empresa.Telefono" Label="Teléfono" InputType="InputType.Telephone" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="6" md="3">
                 <MudTextField @bind-Value="empresa.Email" Label="Correo" InputType="InputType.Email" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="empresa.Direccion" Label="Dirección fiscal" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <CampoUbigeo @bind-Codigo="empresa.Ubigeo" />
             </MudItem>
             @if (empresa.EstadoSunat is not null)
             {
@@ -117,6 +120,7 @@ else
         empresa!.RazonSocial = datos.RazonSocial;
         empresa.NombreComercial = datos.NombreComercial;
         empresa.Direccion = datos.Direccion;
+        empresa.Ubigeo = datos.Ubigeo;
         empresa.EstadoSunat = datos.Estado;
         empresa.CondicionSunat = datos.Condicion;
     }

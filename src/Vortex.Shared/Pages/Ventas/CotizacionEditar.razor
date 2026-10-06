@@ -8,6 +8,7 @@
 @inject IRepositorioContactos Contactos
 @inject IRepositorioNegocio Negocios
 @inject IGeneradorPdfCotizaciones GeneradorPdf
+@inject CatalogoUbigeos Ubigeos
 @inject IServicioArchivos Archivos
 @inject NavigationManager Navegacion
 @inject ISnackbar Snackbar
@@ -376,7 +377,7 @@ else
         generandoPdf = true;
         try
         {
-            var cliente = ClienteCotizacion.Crear(EmpresaElegida, ContactoElegido);
+            var cliente = ClienteCotizacion.Crear(EmpresaElegida, ContactoElegido, Ubigeos);
             var copia = cotizacion!.Clonar();
 
             // Se genera fuera del hilo de la interfaz para que la app no se congele en celulares modestos

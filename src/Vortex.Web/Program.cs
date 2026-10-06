@@ -2,6 +2,8 @@ using System.Globalization;
 using MudBlazor.Services;
 using Vortex.Domain.Comun;
 using Vortex.Infrastructure;
+using Vortex.Infrastructure.Configuracion;
+using Vortex.Infrastructure.Datos;
 using Vortex.Shared.Servicios;
 using Vortex.Web.Components;
 using Vortex.Web.Servicios;
@@ -16,10 +18,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
-builder.Services.AddVortexInfraestructura();
+// Los datos de la web van en App_Data (o en la carpeta de "Datos:Carpeta" en appsettings)
+var carpetaDatos = builder.Configuration["Datos:Carpeta"] ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+var configuracion = new AlmacenConfiguracionArchivo(Path.Combine(carpetaDatos, "instalacion.json"));
+builder.Services.AddVortexInfraestructura(
+    OpcionesDatos.SegunConfiguracion(configuracion, Path.Combine(carpetaDatos, "vortex.db")));
 builder.Services.AddScoped<IServicioArchivos, ServicioArchivosWeb>();
 
 var app = builder.Build();
+app.Services.PrepararBaseDeDatos();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

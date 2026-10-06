@@ -22,3 +22,9 @@ Publish/
 published/
 # Paquetes generados (MSIX, etc.)
 artifacts/
+
+# Datos locales (bases SQLite y configuración de la instalación)
+App_Data/
+*.db
+*.db-shm
+*.db-wal

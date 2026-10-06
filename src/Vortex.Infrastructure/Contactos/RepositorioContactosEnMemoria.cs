@@ -1,10 +1,11 @@
 using Vortex.Domain.Contactos;
+using Vortex.Infrastructure.Comun;
 
 namespace Vortex.Infrastructure.Contactos;
 
 /// <summary>
-/// Repositorio temporal en memoria: los datos se pierden al cerrar la app. Se
-/// reemplazará por SQLite (app) y SQL Server (API) en la Fase 2.
+/// Repositorio en memoria para los tests: los datos se pierden al cerrar. La app y la web
+/// usan la base de datos (ver Datos/RepositoriosSql.cs).
 /// </summary>
 /// <remarks>
 /// Guarda y devuelve copias, para que editar un objeto en un formulario no cambie
@@ -21,7 +22,7 @@ public sealed class RepositorioContactosEnMemoria : IRepositorioContactos
         lock (candado)
         {
             IReadOnlyList<Empresa> resultado = empresas.Values
-                .Where(e => Coincide(filtro, e.Ruc, e.RazonSocial, e.NombreComercial))
+                .Where(e => Filtro.Coincide(filtro, e.Ruc, e.RazonSocial, e.NombreComercial))
                 .OrderBy(e => e.NombreVisible, StringComparer.CurrentCultureIgnoreCase)
                 .Select(e => e.Clonar())
                 .ToList();
@@ -74,7 +75,7 @@ public sealed class RepositorioContactosEnMemoria : IRepositorioContactos
         lock (candado)
         {
             IReadOnlyList<Contacto> resultado = contactos.Values
-                .Where(c => Coincide(filtro, c.NombreCompleto, c.Dni, c.Telefono, c.Email))
+                .Where(c => Filtro.Coincide(filtro, c.NombreCompleto, c.Dni, c.Telefono, c.Email))
                 .OrderBy(c => c.NombreCompleto, StringComparer.CurrentCultureIgnoreCase)
                 .Select(c => c.Clonar())
                 .ToList();
@@ -109,8 +110,4 @@ public sealed class RepositorioContactosEnMemoria : IRepositorioContactos
 
         return Task.CompletedTask;
     }
-
-    private static bool Coincide(string? filtro, params string?[] campos) =>
-        string.IsNullOrWhiteSpace(filtro)
-        || campos.Any(c => c?.Contains(filtro.Trim(), StringComparison.CurrentCultureIgnoreCase) == true);
 }

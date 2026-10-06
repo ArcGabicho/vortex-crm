@@ -36,15 +36,6 @@ else
                               HelperText="Es el que se destaca en tus cotizaciones" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="negocio.Direccion" Label="Dirección" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="negocio.Telefono" Label="Celular / WhatsApp" InputType="InputType.Telephone" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="negocio.Email" Label="Correo" InputType="InputType.Email" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
                 <MudSelect T="RegimenTributario" @bind-Value="negocio.Regimen" Label="Régimen tributario"
                            HelperText="@AyudaRegimen">
                     @foreach (var regimen in Regimenes.Todos)
@@ -52,6 +43,18 @@ else
                         <MudSelectItem T="RegimenTributario" Value="regimen">@regimen.Nombre()</MudSelectItem>
                     }
                 </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="negocio.Direccion" Label="Dirección" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <CampoUbigeo @bind-Codigo="negocio.Ubigeo" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="negocio.Telefono" Label="Celular / WhatsApp" InputType="InputType.Telephone" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="negocio.Email" Label="Correo" InputType="InputType.Email" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="negocio.CondicionesPredeterminadas" Label="Condiciones de tus cotizaciones"
@@ -93,6 +96,7 @@ else
         negocio!.RazonSocial = datos.RazonSocial;
         negocio.NombreComercial ??= datos.NombreComercial;
         negocio.Direccion = datos.Direccion;
+        negocio.Ubigeo = datos.Ubigeo;
     }
 
     private async Task GuardarAsync()

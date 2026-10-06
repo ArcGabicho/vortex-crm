@@ -28,8 +28,8 @@ public sealed class ConsultaDocumentosFalsa(TimeSpan? latencia = null) : IConsul
     private static readonly string[] Direcciones =
         ["AV. JAVIER PRADO ESTE", "JR. DE LA UNIÓN", "AV. AREQUIPA", "CALLE MERCADERES", "AV. LA MARINA", "JR. GAMARRA"];
 
-    private static readonly string[] Distritos =
-        ["LIMA - LIMA - SAN ISIDRO", "LIMA - LIMA - LA VICTORIA", "AREQUIPA - AREQUIPA - CERCADO", "CUSCO - CUSCO - WANCHAQ", "LA LIBERTAD - TRUJILLO - TRUJILLO"];
+    // Ubigeos reales del INEI: San Isidro y La Victoria (Lima), Arequipa, Wanchaq (Cusco) y Trujillo
+    private static readonly string[] Ubigeos = ["150131", "150115", "040101", "080108", "130101"];
 
     private readonly TimeSpan latencia = latencia ?? TimeSpan.FromMilliseconds(400);
 
@@ -45,18 +45,19 @@ public sealed class ConsultaDocumentosFalsa(TimeSpan? latencia = null) : IConsul
         }
 
         var semilla = long.Parse(ruc);
-        var direccion = $"{Elegir(Direcciones, semilla)} {100 + semilla % 900} {Elegir(Distritos, semilla / 7)}";
+        var direccion = $"{Elegir(Direcciones, semilla)} {100 + semilla % 900}";
+        var ubigeo = Elegir(Ubigeos, semilla / 7);
 
         if (DocumentoIdentidad.EsRucDePersonaJuridica(ruc))
         {
             var marca = Elegir(Marcas, semilla / 3);
             var razonSocial = $"{Elegir(Rubros, semilla)} {marca} S.A.C.";
-            return new DatosRuc(ruc, razonSocial, marca, direccion, "ACTIVO", "HABIDO");
+            return new DatosRuc(ruc, razonSocial, marca, direccion, "ACTIVO", "HABIDO", ubigeo);
         }
 
         // Persona natural con negocio: el RUC 10 contiene el DNI en los dígitos 3 a 10
         var persona = CrearPersona(ruc[2..10]);
-        return new DatosRuc(ruc, $"{persona.Apellidos} {persona.Nombres}", null, direccion, "ACTIVO", "HABIDO");
+        return new DatosRuc(ruc, $"{persona.Apellidos} {persona.Nombres}", null, direccion, "ACTIVO", "HABIDO", ubigeo);
     }
 
     public async Task<DatosDni?> ConsultarDniAsync(string dni, CancellationToken cancellationToken = default)

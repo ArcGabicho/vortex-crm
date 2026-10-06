@@ -13,6 +13,9 @@ public sealed class Empresa
 
     public string? Direccion { get; set; }
 
+    /// <summary>Código de ubigeo del INEI del distrito de la dirección fiscal (ver <see cref="Comun.Ubigeo"/>).</summary>
+    public string? Ubigeo { get; set; }
+
     public string? Telefono { get; set; }
 
     public string? Email { get; set; }
@@ -41,6 +44,11 @@ public sealed class Empresa
         if (string.IsNullOrWhiteSpace(RazonSocial))
         {
             errores.Add("La razón social es obligatoria.");
+        }
+
+        if (Ubigeo is not null && !Comun.Ubigeo.EsCodigoValido(Ubigeo))
+        {
+            errores.Add("El distrito no es válido.");
         }
 
         return errores;
